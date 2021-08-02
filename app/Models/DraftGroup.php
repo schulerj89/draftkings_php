@@ -12,22 +12,32 @@ class DraftGroup
 
   protected $playersUrl;
 
+  protected $draftGroupId;
+
+  protected $gameTypeId;
+
   public function __construct($sport = '', $type = '')
   {
     $this->sport = $sport;
     $this->type = $type;
+    $this->draftGroupId = 0;
+    $this->gameTypeId = 0;
     $this->draftGroupUrl = "https://www.draftkings.com/lobby/getcontests?sport={$this->sport}";
     $this->playersUrl = "https://api.draftkings.com/draftgroups/v1/draftgroups/{draft_group_id}/draftables?format=json";
+    $this->gameTypeUrl = "https://api.draftkings.com/draftgroups/v1/{draft_group_id}?format=json";
   }
 
   /**
-   * Get the draft group id based on type
+   * Set the draft group id based on type
    * 
-   * @return int $draftGroupId
+   * @return object $this
    */
-  public function getDraftGroupId()
+  public function setDraftGroupId()
   {
-    $draftGroupId = 0;
+    if($this->draftGroupId > 0) {
+        return $this;
+    }
+
     $client = new \GuzzleHttp\Client();
     $response = $client->request('GET', $this->draftGroupUrl);
 
@@ -36,29 +46,72 @@ class DraftGroup
 
     foreach($content['DraftGroups'] as $_draftGroup) {
         if(strtolower($_draftGroup['DraftGroupTag']) == $this->type) {
-            $draftGroupId = $_draftGroup['DraftGroupId'];
+            $this->draftGroupId = $_draftGroup['DraftGroupId'];
             break;
         }
-     }
+    }
 
-    return $draftGroupId;
+    return $this;
   }
 
   /**
    * Get players from the draft group
+   * 
+   * @return array
    */
   public function getPlayersFromDraftGroup()
   {
     $draftGroupId = $this->getDraftGroupId();
-    $playersUrl = $this->buildPlayersUrl($draftGroupId);
+    $playersUrl = $this->buildDraftGroupUrl($draftGroupId, $this->playersUrl);
     $client = new \GuzzleHttp\Client();
     $response = $client->request('GET', $playersUrl);
+    $players = json_decode($response->getBody(), true);
 
-    return json_decode($response->getBody(), true);
+    return $players['draftables'];
   }
 
-  protected function buildPlayersUrl($draftGroupId)
+  /**
+   * Format players url with draft group id
+   * 
+   * @param int $draftGroupId
+   * @param string $url
+   * @return string
+   */
+  protected function buildDraftGroupUrl($draftGroupId, $url)
   {
-    return str_replace('{draft_group_id}', $draftGroupId, $this->playersUrl);
+    return str_replace('{draft_group_id}', $draftGroupId, $url);
+  }
+
+  /**
+   * Set game type id
+   * 
+   * @return object $this
+   */
+  public function setGameTypeId()
+  {
+    if($this->gameTypeId > 0) {
+      return $this;
+    }
+
+    $draftGroupId = $this->getDraftGroupId();
+    $gameTypeUrl = $this->buildDraftGroupUrl($draftGroupId, $this->gameTypeUrl);
+    $client = new \GuzzleHttp\Client();
+    $response = $client->request('GET', $gameTypeUrl);
+    $gameTypeArray = json_decode($response->getBody(), true);
+    $this->gameTypeId = $gameTypeArray['draftGroup']['contestType']['contestTypeId'];
+
+    return $this;
+  }
+
+  /**
+   * Get draft group rules
+   * 
+   * @return object App\Model\Rules
+   */
+  public function getDraftGroupRules()
+  {
+    $rules = new Rules($this->gameTypeId);
+
+    return $rules;
   }
 }

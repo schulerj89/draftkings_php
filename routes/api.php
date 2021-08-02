@@ -15,8 +15,5 @@ use App\Http\Controllers\DraftkingsController;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 Route::get('/draftkings/sport/{sport}/type/{type}', [DraftkingsController::class, 'getPlayers']);
+Route::get('/draftkings/sport/{sport}/type/{type}/generate', [DraftkingsController::class, 'generateRoster']);
