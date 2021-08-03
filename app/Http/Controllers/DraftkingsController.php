@@ -15,8 +15,11 @@ class DraftkingsController extends Controller
         return response()->json($players);
     }
 
-    public function generateRoster($sport, $type)
+    public function generateLineup($sport, $type)
     {
-        
+        $draftGroup = new DraftGroup($sport, $type);
+        $lineup = $draftGroup->generateLineup();
+
+        return response()->json($lineup);
     }
 }

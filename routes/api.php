@@ -16,4 +16,4 @@ use App\Http\Controllers\DraftkingsController;
 */
 
 Route::get('/draftkings/sport/{sport}/type/{type}', [DraftkingsController::class, 'getPlayers']);
-Route::get('/draftkings/sport/{sport}/type/{type}/generate', [DraftkingsController::class, 'generateRoster']);
+Route::get('/draftkings/sport/{sport}/type/{type}/generate', [DraftkingsController::class, 'generateLineup']);

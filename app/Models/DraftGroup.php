@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Player;
+
 class DraftGroup
 {
   protected $sport;
@@ -16,18 +18,26 @@ class DraftGroup
 
   protected $gameTypeId;
 
+  protected $rules;
+
+  protected $players;
+
   public function __construct($sport = '', $type = '')
   {
     $this->sport = $sport;
     $this->type = $type;
     $this->draftGroupId = 0;
     $this->gameTypeId = 0;
+    $this->rules = null;
+    $this->players = [];
     $this->draftGroupUrl = "https://www.draftkings.com/lobby/getcontests?sport={$this->sport}";
     $this->playersUrl = "https://api.draftkings.com/draftgroups/v1/draftgroups/{draft_group_id}/draftables?format=json";
     $this->gameTypeUrl = "https://api.draftkings.com/draftgroups/v1/{draft_group_id}?format=json";
 
     $this->setDraftGroupId();
     $this->setGameTypeId();
+    $this->setDraftGroupRules();
+    $this->setPlayersFromDraftGroup();
   }
 
   /**
@@ -74,7 +84,7 @@ class DraftGroup
    * 
    * @return array
    */
-  public function getPlayersFromDraftGroup()
+  public function setPlayersFromDraftGroup()
   {
     $draftGroupId = $this->getDraftGroupId();
     $playersUrl = $this->buildDraftGroupUrl($draftGroupId, $this->playersUrl);
@@ -82,7 +92,17 @@ class DraftGroup
     $response = $client->request('GET', $playersUrl);
     $players = json_decode($response->getBody(), true);
 
-    return $players['draftables'];
+    $this->players = $players['draftables'];
+  }
+
+  /**
+   * Get players from the draft group
+   * 
+   * @return array
+   */
+  public function getPlayersFromDraftGroup()
+  {
+    return $this->players;
   }
 
   /**
@@ -107,18 +127,33 @@ class DraftGroup
     $client = new \GuzzleHttp\Client();
     $response = $client->request('GET', $gameTypeUrl);
     $gameTypeArray = json_decode($response->getBody(), true);
-    $this->gameTypeId = $gameTypeArray['draftGroup']['contestType']['contestTypeId'];
+
+    $this->gameTypeId = $gameTypeArray['draftGroup']['gameTypeId'];
   }
 
   /**
-   * Get draft group rules
-   * 
-   * @return object App\Model\Rules
+   * Set draft group rules
    */
+  public function setDraftGroupRules()
+  {
+    $this->rules = new Rules($this->gameTypeId);
+  }
+
   public function getDraftGroupRules()
   {
-    $rules = new Rules($this->gameTypeId);
+    return $this->rules;
+  }
 
-    return $rules;
+  /**
+   * Generate lineup based on draft group
+   * 
+   * @return array $lineup
+   */
+  public function generateLineup()
+  {
+    $lineupObj = new Lineup($this->players, $this->rules);
+    $lineup = $lineupObj->generateLineup();
+
+    return $lineup;
   }
 }
