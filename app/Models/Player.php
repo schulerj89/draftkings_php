@@ -50,6 +50,8 @@ class Player
         // some sports use this field to determine if the player is probable to play (Ex: MLB)
         if(isset($this->playerData['playerGameAttributes']) && !empty($this->playerData['playerGameAttributes'])) {
             foreach($this->playerData['playerGameAttributes'] as $_gameAttribute) {
+
+                // used for pitchers to confirm if they are probable to play
                 if($_gameAttribute['id'] == 1 && in_array($this->getPosition(), $this->probablePositions)) {
                     return (bool)$_gameAttribute['value'];
                 }
@@ -61,7 +63,10 @@ class Player
                 }
             }
 
-            return false;
+            // if we had a position that is probable and we got here they are not probable to play (mainly pitchers)
+            if(in_array($this->getPosition(), $this->probablePositions)) {
+                return false;
+            }
         }
 
         return true;

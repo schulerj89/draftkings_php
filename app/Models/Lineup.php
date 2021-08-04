@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\DraftGroup;
 use App\Models\PlayerPool;
 
 class Lineup
