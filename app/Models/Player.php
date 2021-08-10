@@ -8,7 +8,7 @@ class Player
 
     protected $probablePositions = array('SP', 'RP');
 
-    protected $injuryStatus = array('IL', 'OUT');
+    protected $injuryStatus = array('IL', 'OUT', 'DTD');
 
     public function __construct($player)
     {
@@ -45,6 +45,11 @@ class Player
         return in_array($this->getStatus(), $this->injuryStatus);
     }
 
+    /**
+     * Determine if player is eligible to play
+     * 
+     * @return bool
+     */
     public function isProbable()
     {
         // some sports use this field to determine if the player is probable to play (Ex: MLB)

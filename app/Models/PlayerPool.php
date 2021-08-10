@@ -27,4 +27,25 @@ class PlayerPool
     {
         return $this->playerPool;
     }
+
+    /**
+     * Determine if the salary is greater than the smallest salary in roster slot pool
+     * 
+     * @params int $rosterSlotId
+     * @params int $salary
+     * @params int $buffer
+     * @return bool
+     */
+    public function isSalaryGreaterThanMin($rosterSlotId, $salary, $buffer = 0)
+    {
+        $min = 99999;
+
+        foreach($this->playerPool[$rosterSlotId] as $_player) {
+            if($_player->getSalary() < $min) {
+                $min = $_player->getSalary();
+            }
+        }
+
+        return $salary >= ($min + $buffer);
+    }
 }

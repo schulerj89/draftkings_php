@@ -139,6 +139,11 @@ class DraftGroup
     $this->rules = new Rules($this->gameTypeId);
   }
 
+  /**
+   * Get draft rules
+   * 
+   * @return App\Models\Rules
+   */
   public function getDraftGroupRules()
   {
     return $this->rules;
@@ -147,12 +152,13 @@ class DraftGroup
   /**
    * Generate lineup based on draft group
    * 
+   * @param int $salaryBuffer
    * @return array $lineup
    */
-  public function generateLineup()
+  public function generateLineup($salaryBuffer)
   {
     $lineupObj = new Lineup($this->players, $this->rules);
-    $lineup = $lineupObj->generateLineup();
+    $lineup = $lineupObj->generateLineup($salaryBuffer);
 
     return $lineup;
   }

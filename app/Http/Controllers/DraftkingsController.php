@@ -7,6 +7,12 @@ use App\Models\DraftGroup;
 
 class DraftkingsController extends Controller
 {
+    /**
+     * @param string $sport
+     * @param string $type
+     * 
+     * @return \Illuminate\Http\Response
+     */
     public function getPlayers($sport, $type)
     {
         $draftGroup = new DraftGroup($sport, $type);
@@ -15,10 +21,23 @@ class DraftkingsController extends Controller
         return response()->json($players);
     }
 
-    public function generateLineup($sport, $type)
+    /**
+     * @param Illuminate\Http\Request $request
+     * @param string $sport
+     * @param string $type
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function generateLineup(Request $request, $sport, $type)
     {
+        $salaryBuffer = 0;
+
+        if($request->get('buffer') != null) {
+            $salaryBuffer = $request->get('buffer');
+        }
+
         $draftGroup = new DraftGroup($sport, $type);
-        $lineup = $draftGroup->generateLineup();
+        $lineup = $draftGroup->generateLineup($salaryBuffer);
 
         return response()->json($lineup);
     }
